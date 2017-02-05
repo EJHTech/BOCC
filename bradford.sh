@@ -51,7 +51,6 @@ bookTotal=$(cat rise.txt | wc -l)
 echo $bookTotal
 
 while read url; do
- while [[ "$(pgrep -f wget | wc -l | tail -n 1)" -gt 9 && $c -gt 10 ]]; do sleep 0; done;
  ((c++));
  wget -P ris/ -nc $url >/dev/null 2>&1 && echo "Book #$c/$bookTotal" &
 done < rise.txt

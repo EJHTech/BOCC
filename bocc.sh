@@ -1,9 +1,9 @@
 #!/bin/bash
-#
+
 #Blackwell's Online Course Collector
 #Version 0.1
 # Copyright 2017 Eric Hofrichter
-
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -24,32 +24,36 @@ THIS=`readlink -f "${BASH_SOURCE[0]}"`
 # This directory path
 DIR=`dirname "${THIS}"`
 
-#get input from user
+#initialize variables
 school=""
+year=""
+
+#get input from user
 echo "Hello, "$USER".  This script will download and parse course information from university websites"
 
-#read school
+echo "Select School from list-
+1 - Aberdeen
+2 - Edinburgh
+3 - Bradford"
 
-while [[ ! $school || $school = [^0-9] ]]; do
-	echo "Select School from list-
-	1 - Aberdeen
-	2 - Edinburgh
-	3 - Bradford"
+while [[ ! $school || ! $school =~ ^[0-9]$ ]]; do
 	read school
+	if [[ ! $school || ! $school =~ ^[0-9]$ ]]; then
+		echo "Invalid school selection"
+	fi
 done
 
-year=""
-while [[ ! $input || $input != 20[0-9][0-9] ]]; do
-    #echo "Error: '$input' is not a number." >&2
-		echo "Year in format MMMM-NNNN (e.g. 2016-2017): "
-		read year
-done
-echo $school
-echo $year
-exit
 
-#check input
-
+getYear () {
+	echo "Year in format MMMM-NNNN (e.g. 2016-2017): "
+	while [[ ! $year || ! $year =~ ^20[0-9][0-9]-20[0-9][0-9]$ ]]; do
+			read year
+			if [[ ! $year || ! $year =~ ^20[0-9][0-9]-20[0-9][0-9]$ ]]; then
+				echo "Invalid year"
+			fi
+	done
+	return 0
+}
 
 #Aberdeen function
 if (( $school==1 )); then
