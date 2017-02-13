@@ -3,6 +3,7 @@
 #Blackwell's Online Course Collector
 #Version 0.1
 # Copyright 2017 Eric Hofrichter
+# Time-stamp: <2017-02-13 13:55:23>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
