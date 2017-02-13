@@ -48,7 +48,6 @@ mkdir ris
 
 echo "Downloading book details.  This will take a long while"
 bookTotal=$(cat rise.txt | wc -l)
-echo $bookTotal
 
 while read url; do
  ((c++));

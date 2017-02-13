@@ -43,19 +43,14 @@ while [[ ! $school || ! $school =~ ^[0-9]$ ]]; do
 	fi
 done
 
+echo "Year in format MMMM-NNNN (e.g. 2016-2017): "
+while [[ ! $year || ! $year =~ ^20[0-9][0-9]-20[0-9][0-9]$ ]]; do
+		read year
+		if [[ ! $year || ! $year =~ ^20[0-9][0-9]-20[0-9][0-9]$ ]]; then
+			echo "Invalid year"
+		fi
+done
 
-getYear () {
-	echo "Year in format MMMM-NNNN (e.g. 2016-2017): "
-	while [[ ! $year || ! $year =~ ^20[0-9][0-9]-20[0-9][0-9]$ ]]; do
-			read year
-			if [[ ! $year || ! $year =~ ^20[0-9][0-9]-20[0-9][0-9]$ ]]; then
-				echo "Invalid year"
-			fi
-	done
-	return 0
-}
-
-#Aberdeen function
 if (( $school==1 )); then
 	. "$DIR/aberdeen.sh" "$year"
 	exit
@@ -70,5 +65,4 @@ elif (( $school==3 )); then
 
 else echo "Please provide a valid school";
 	exit
-
 fi

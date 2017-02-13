@@ -34,9 +34,9 @@ wget -r --level=4 -e robots=off  --accept=htm --reject-regex '[a-z].htm' --no-ch
 #Remove extraneous information--------------------------------------------------
 rm www.drps.ed.ac.uk/$year/dpt/*[^0-9].htm
 rm www.ed.ac.uk/profile/*student
-sed -i -e '/Course secretary/,+2d' www.drps.ed.ac.uk/$year/dpt/cx[a-f]*.htm
-sed -i -e '/Course secretary/,+2d' www.drps.ed.ac.uk/$year/dpt/cx[g-m]*.htm
-sed -i -e '/Course secretary/,+2d' www.drps.ed.ac.uk/$year/dpt/cx[n-z]*.htm
+for alpha in {a..z}; do
+  sed -i -e '/Course secretary/,+2d' www.drps.ed.ac.uk/$year/dpt/cx$alpha*.htm
+done
 
 #change working directory
 cd $SCHOOL/$year
@@ -53,7 +53,7 @@ find ../../www.drps.ed.ac.uk/$year/dpt/ -type f | xargs grep -H -L "Course organ
 sed -i 's/<td class="rowhead1"  width="15%">Course organiser<\/td><td width="35%">/^/g' courseOrganiser.txt
 sed -i 's/<br>/^/g' courseOrganiser.txt
 sort courseOrganiser.txt > COURSEORGANISER.txt
-
+exit
 #strip out and clean up telephone-----------------------------------------------
 echo "Telephone Numbers..."
 find ../../www.drps.ed.ac.uk/$year/dpt/ -type f | xargs grep -H "Tel" > Tel.txt
@@ -125,19 +125,18 @@ tr -s "^" < OETTDSY.txt > OETTDSYtrimmed.txt
 
 echo "Reading List..."
 
-cp -n ../../www.drps.ed.ac.uk/$year/dpt/cx[a-f]*.htm ../../www.drps.ed.ac.uk/$year/bak
-cp -n ../../www.drps.ed.ac.uk/$year/dpt/cx[g-m]*.htm ../../www.drps.ed.ac.uk/$year/bak
-cp -n ../../www.drps.ed.ac.uk/$year/dpt/cx[n-z]*.htm ../../www.drps.ed.ac.uk/$year/bak
+for alpha in {a..z}; do
+cp -n ../../www.drps.ed.ac.uk/$year/dpt/cx[$alpha]*.htm ../../www.drps.ed.ac.uk/$year/bak
+done
 
-gawk -i inplace -v INPLACE_SUFFIX=.bak '/Reading List/{flag=1;next}/table/{flag=0;next} flag' ../../www.drps.ed.ac.uk/$year/dpt/cx[a-f]*.htm
-gawk -i inplace -v INPLACE_SUFFIX=.bak '/Reading List/{flag=1;next}/table/{flag=0;next} flag' ../../www.drps.ed.ac.uk/$year/dpt/cx[g-m]*.htm
-gawk -i inplace -v INPLACE_SUFFIX=.bak '/Reading List/{flag=1;next}/table/{flag=0;next} flag' ../../www.drps.ed.ac.uk/$year/dpt/cx[n-z]*.htm
-
+for alpha in {a..z}; do
+gawk -i inplace -v INPLACE_SUFFIX=.bak '/Reading List/{flag=1;next}/table/{flag=0;next} flag' ../../www.drps.ed.ac.uk/$year/dpt/cx[$alpha]*.htm
+done
 
 #add full path to filename for join matching and create readingList file--------
-awk '{print FILENAME,$0}' ../../www.drps.ed.ac.uk/$year/dpt/cx[a-f]*.htm > readingList.txt
-awk '{print FILENAME,$0}' ../../www.drps.ed.ac.uk/$year/dpt/cx[g-m]*.htm >> readingList.txt
-awk '{print FILENAME,$0}' ../../www.drps.ed.ac.uk/$year/dpt/cx[n-z]*.htm >> readingList.txt
+for alpha in {a..z}; do
+awk '{print FILENAME,$0}' ../../www.drps.ed.ac.uk/$year/dpt/cx[$alpha]*.htm > readingList.txt
+done
 
 #clean up readingList-----------------------------------------------------------
 
