@@ -3,7 +3,6 @@
 #Blackwell's Online Course Collector
 #Version 0.1
 # Copyright 2017 Eric Hofrichter
-# Time-stamp: <2017-02-13 13:55:23>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,20 +20,22 @@
 
 echo "Edinburgh";
 SCHOOL=Edinburgh
-current_dir=$PWD
+currentdir=$PWD
 
 year=`echo $1 | sed 's/20//g'`
 
 echo "Downloading Information.  This will take a while"
 mkdir -p $SCHOOL/$year
+mkdir $SCHOOL/$year/bak
 
 #download course information----------------------------------------------------
 
-wget -r --level=4 -e robots=off  --accept=htm --reject-regex '[a-z].htm' --no-check-certificate -nc -np www.drps.ed.ac.uk/$year
+
+#Backup files
+mkdir www.drps.ed.ac.uk/$year/bak
+cp -n www.drps.ed.ac.uk/$year/dpt/*.htm www.drps.ed.ac.uk/$year/bak
 
 #Remove extraneous information--------------------------------------------------
-rm www.drps.ed.ac.uk/$year/dpt/*[^0-9].htm
-rm www.ed.ac.uk/profile/*student
 for alpha in {a..z}; do
   sed -i -e '/Course secretary/,+2d' www.drps.ed.ac.uk/$year/dpt/cx$alpha*.htm
 done
@@ -42,9 +43,7 @@ done
 #change working directory
 cd $SCHOOL/$year
 
-#Strip out, sort, clean up, and join names and emails (from profile pages)------
 echo "Working on:"
-echo "Emails..."
 
 #Strip out and clean up course organizer (from course pages)--------------------
 echo "Courses..."
@@ -53,8 +52,6 @@ find ../../www.drps.ed.ac.uk/$year/dpt/ -type f | xargs grep -H "Course organise
 find ../../www.drps.ed.ac.uk/$year/dpt/ -type f | xargs grep -H -L "Course organiser<" > NOcourseOrganiser.txt
 sed -i 's/<td class="rowhead1"  width="15%">Course organiser<\/td><td width="35%">/^/g' courseOrganiser.txt
 sed -i 's/<br>/^/g' courseOrganiser.txt
-sort courseOrganiser.txt > COURSEORGANISER.txt
-exit
 #strip out and clean up telephone-----------------------------------------------
 echo "Telephone Numbers..."
 find ../../www.drps.ed.ac.uk/$year/dpt/ -type f | xargs grep -H "Tel" > Tel.txt
@@ -62,7 +59,6 @@ find ../../www.drps.ed.ac.uk/$year/dpt/ -type f | xargs grep -H -L "Tel" > NOTel
 sed -i 's/<b>Tel:<\/b>/^/g' Tel.txt
 sed -i 's/<br>//g' Tel.txt
 sed -i 's/ (/(/g' Tel.txt
-sort Tel.txt > TEL.txt
 
 
 #strip out and clean up email address-------------------------------------------
@@ -70,14 +66,12 @@ echo "Email Addresses..."
 find ../../www.drps.ed.ac.uk/$year/dpt/ -type f | xargs grep -H "Email:" > Email.txt
 find ../../www.drps.ed.ac.uk/$year/dpt/ -type f | xargs grep -H -L "Email:" > NOEmail.txt
 sed -i 's/<b>Email:<\/b> /^/g' Email.txt
-sed 's/<\/td>//g' Email.txt > EMAIL.txt
 
 #strip out and clean up course title/number
 echo "Course Titles and Numbers..."
 find ../../www.drps.ed.ac.uk/$year/dpt/ -type f | xargs grep "<title>Course Catalog" > titleAndDRPS.txt
 sed -i 's/<title>Course Catalogue - /^/g' titleAndDRPS.txt
 sed -i 's/<\/title>//g' titleAndDRPS.txt
-#sed -i 's/ (/^(/g' titleAndDRPS.txt
 
 #split DRPS and title-----------------------------------------------------------
 grep ') (' titleAndDRPS.txt > twoParens.txt
@@ -86,8 +80,6 @@ sed -i '/) (/d' titleAndDRPS.txt
 sed -i 's/ (/^(/g' titleAndDRPS.txt
 cat twoParens.txt >> titleAndDRPS.txt
 sort titleAndDRPS.txt | uniq > uniqTitleAndDRPS.txt
-cut -d ^ -f 1,3 uniqTitleAndDRPS.txt > DRPS.txt
-cut -d ^ -f 1,2 uniqTitleAndDRPS.txt > TITLES.txt
 
 #strip out and clean up course Semester (course start)--------------------------
 echo "Semesters..."
@@ -99,7 +91,6 @@ grep colspan courseStart.txt > semester.txt
 sort semester.txt > sortedSemester.txt
 uniq sortedSemester.txt > uniqSemester.txt
 sed -i 's/<\/td>//g' uniqSemester.txt
-sed 's/-<td colspan="14">/:^/g' uniqSemester.txt > SEMESTER.txt
 
 #strip out and clean up year (SCQF Level 7 (year 1 Undergraduate))--------------
 echo "year..."
@@ -107,19 +98,11 @@ find ../../www.drps.ed.ac.uk/$year/dpt/ -type f | xargs grep 'Credit level' > ye
 find ../../www.drps.ed.ac.uk/$year/dpt/ -type f | xargs grep -L 'Credit level' > NOyear.txt
 sed -i 's/<\/td>//g' year.txt
 sed -i 's/<td.*SCQF/^SCQF/g' year.txt
-sort year.txt > sortedYear.txt
-mv sortedYear.txt YEAR.txt
 
 #join on file names-------------------------------------------------------------
 export LC_ALL='C'
 
 echo "Joining fields..."
-join -t ^ -1 1 COURSEORGANISER.txt EMAIL.txt > OE.txt
-join -t ^ -1 1 OE.txt TEL.txt > OET.txt
-join -t ^ -1 1 OET.txt TITLES.txt > OETT.txt
-join -t ^ -1 1 OETT.txt DRPS.txt > OETTD.txt
-join -t ^ -1 1 OETTD.txt SEMESTER.txt > OETTDS.txt
-join -t ^ -1 1 OETTDS.txt YEAR.txt > OETTDSY.txt
 tr -s "^" < OETTDSY.txt > OETTDSYtrimmed.txt
 
 #strip out reading list and prepend filename------------------------------------
@@ -153,11 +136,9 @@ join -t ^ -1 1 DRPS.txt readingList.txt > DRPSreadingList.txt
 
 #clean up folder
 echo "Cleaning up..."
-rm -R ../../www.drps.ed.ac.uk/$year/dpt/
 cp -R ../../www.drps.ed.ac.uk/$year/bak/ ../../www.drps.ed.ac.uk/$year/dpt/
 echo "Done"
 
 #return to BOCC directory
-cd $current_dir
 
 exit
