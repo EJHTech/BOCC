@@ -3,7 +3,7 @@
 #Blackwell's Online Course Collector
 #Version 0.1
 # Copyright 2017 Eric Hofrichter
-# Time-stamp: <2017-02-15 19:07:48>
+# Time-stamp: <2017-02-16 13:44:07>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,18 +31,23 @@ mkdir $SCHOOL/$year/bak
 
 #download course information----------------------------------------------------
 
-wget -r --level=4 -e robots=off  --accept=htm --no-check-certificate -nc -np www.drps.ed.ac.uk/$year
+#wget -r --level=4 -e robots=off  --accept=htm --no-check-certificate -nc -np www.drps.ed.ac.uk/$year
 
 #Backup files
 mkdir www.drps.ed.ac.uk/$year/bak
-cp -n www.drps.ed.ac.uk/$year/dpt/*.htm www.drps.ed.ac.uk/$year/bak
+cp -n -R www.drps.ed.ac.uk/$year/dpt/ www.drps.ed.ac.uk/$year/bak/
 
 #Remove extraneous information--------------------------------------------------
-mv www.drps.ed.ac.uk/$year/dpt/*[^0-9].htm www.drps.ed.ac.uk/$year/bak
+rm www.drps.ed.ac.uk/$year/dpt/cx_*.htm
+for alpha in {d,p,u,v}; do
+  rm www.drps.ed.ac.uk/$year/dpt/$alpha*.htm
+done
+
 for alpha in {a..z}; do
   sed -i -e '/Course secretary/,+2d' www.drps.ed.ac.uk/$year/dpt/cx$alpha*.htm
 done
-#change working directory
+
+#change working directory-------------------------------------------------------
 cd $SCHOOL/$year
 
 echo "Working on:"
@@ -58,8 +63,8 @@ sort courseOrganiser.txt > SORTEDCOURSEORGANISER.txt
 
 #strip out and clean up telephone-----------------------------------------------
 echo "Telephone Numbers..."
-find ../../www.drps.ed.ac.uk/$year/dpt/ -type f | xargs grep -H "Tel" > Tel.txt
-find ../../www.drps.ed.ac.uk/$year/dpt/ -type f | xargs grep -H -L "Tel" > NOTel.txt
+find ../../www.drps.ed.ac.uk/$year/dpt/ -type f | xargs grep -H "<b>Tel:</b> " > Tel.txt
+find ../../www.drps.ed.ac.uk/$year/dpt/ -type f | xargs grep -H -L "<b>Tel:</b> " > NOTel.txt
 sed -i 's/<b>Tel:<\/b>/^/g' Tel.txt
 sed -i 's/<br>//g' Tel.txt
 sed -i 's/ (/(/g' Tel.txt
@@ -128,16 +133,12 @@ tr -s "^" < OETTDSY.txt > OETTDSYtrimmed.txt
 echo "Reading List..."
 
 for alpha in {a..z}; do
-cp -n ../../www.drps.ed.ac.uk/$year/dpt/cx[$alpha]*.htm ../../www.drps.ed.ac.uk/$year/bak
-done
-
-for alpha in {a..z}; do
 gawk -i inplace -v INPLACE_SUFFIX=.bak '/Reading List/{flag=1;next}/table/{flag=0;next} flag' ../../www.drps.ed.ac.uk/$year/dpt/cx[$alpha]*.htm
 done
 
 #add full path to filename for join matching and create readingList file--------
 for alpha in {a..z}; do
-awk '{print FILENAME,$0}' ../../www.drps.ed.ac.uk/$year/dpt/cx[$alpha]*.htm > readingList.txt
+awk '{print FILENAME,$0}' ../../www.drps.ed.ac.uk/$year/dpt/cx[$alpha]*.htm >> readingList.txt
 done
 
 #clean up readingList-----------------------------------------------------------
@@ -148,13 +149,19 @@ sed -i '/htm:\^[ ]*$/d' readingList.txt
 sed -i 's/\^ [0-9]*\./^ /g' readingList.txt
 tr -s "-" < readingList.txt > readingList2.txt
 mv readingList2.txt readingList.txt
-join -t ^ -1 1 DRPS.txt readingList.txt > DRPSreadingList.txt
+join -t ^ -1 1 SORTEDDRPS.txt readingList.txt > DRPSreadingList.txt
+iconv -f utf-8 -t utf-8 -c DRPSreadingList.txt > utf8DRPSreadingList.txt
 
 
 
 #clean up folder
 echo "Cleaning up..."
-rm  ../../www.drps.ed.ac.uk/$year/dpt/*
+for alpha in {d..z}; do
+rm -R ../../www.drps.ed.ac.uk/$year/dpt/$alpha*
+rm -R ../../www.drps.ed.ac.uk/$year/dpt/cx$alpha*
+done
+rm -R ../../www.drps.ed.ac.uk/$year/dpt/*
+
 cp -R ../../www.drps.ed.ac.uk/$year/bak/ ../../www.drps.ed.ac.uk/$year/dpt/
 echo "Done"
 
