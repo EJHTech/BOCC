@@ -29,7 +29,7 @@ mkdir -p $SCHOOL/$year
 
 #download course information----------------------------------------------------
 
-wget -r --level=4 -e robots=off  --accept=htm --reject-regex '[a-z].htm' --no-check-certificate -nc -np www.drps.ed.ac.uk/$year
+wget -r --level=4 -e robots=off  --accept=htm --no-check-certificate -nc -np www.drps.ed.ac.uk/$year
 
 #Remove extraneous information--------------------------------------------------
 rm www.drps.ed.ac.uk/$year/dpt/*[^0-9].htm 2>> log.txt
